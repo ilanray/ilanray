@@ -695,6 +695,7 @@
     <div class="tab active" onclick="switchTab('dashboard', this)">📊 דשבורד</div>
     <div class="tab" onclick="switchTab('transactions', this)">📋 עסקאות</div>
     <div class="tab" onclick="switchTab('stats', this)">📈 סטטיסטיקה</div>
+    <div class="tab" onclick="switchTab('fixed', this)">📌 קבועות</div>
   </div>
 </div>
 
@@ -770,6 +771,22 @@
     <div class="cat-list" id="cat-list"></div>
   </div>
 
+  <!-- FIXED EXPENSES VIEW -->
+  <div class="view" id="view-fixed">
+    <div class="tx-header">
+      <div class="tx-title">הוצאות קבועות</div>
+      <div class="tx-count" id="fixed-count">0</div>
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFixedFilter('all', this)">הכל</button>
+      <button class="filter-btn" onclick="setFixedFilter('expense', this)">הוצאות</button>
+      <button class="filter-btn" onclick="setFixedFilter('income', this)">הכנסות</button>
+    </div>
+    <div class="tx-list" id="fixed-list">
+      <div class="loading-state">⏳ טוען...</div>
+    </div>
+  </div>
+
 </div>
 
 <!-- BOTTOM NAV -->
@@ -782,14 +799,97 @@
     <div class="nav-icon">📋</div>
     <div class="nav-label">עסקאות</div>
   </div>
-  <button class="fab" onclick="openPanel()">＋</button>
+  <button class="fab" id="main-fab" onclick="handleFab()">＋</button>
   <div class="nav-item" onclick="switchTab('stats', null, this)">
     <div class="nav-icon">📈</div>
     <div class="nav-label">סטטיסטיקה</div>
   </div>
-  <div class="nav-item" onclick="loadTransactions()">
-    <div class="nav-icon">↻</div>
-    <div class="nav-label">רענן</div>
+  <div class="nav-item" onclick="switchTab('fixed', null, this)">
+    <div class="nav-icon">📌</div>
+    <div class="nav-label">קבועות</div>
+  </div>
+</div>
+
+<!-- FIXED ADD PANEL -->
+<div class="add-panel" id="fixed-panel">
+  <div class="panel-overlay" onclick="closeFixedPanel()"></div>
+  <div class="panel-sheet">
+    <div class="panel-handle"></div>
+    <div class="panel-title">הוספת הוצאה קבועה</div>
+
+    <div class="type-row">
+      <button class="type-btn active expense" id="fixed-btn-expense" onclick="setFixedType('expense')">📤 הוצאה</button>
+      <button class="type-btn income" id="fixed-btn-income" onclick="setFixedType('income')">📥 הכנסה</button>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>סכום (₪)</label>
+        <input type="number" id="fixed-amount" placeholder="0.00" inputmode="decimal" />
+      </div>
+      <div class="field">
+        <label>קטגוריה</label>
+        <select id="fixed-category">
+          <option value="⚡ חשמל">⚡ חשמל</option>
+          <option value="💧 מים">💧 מים</option>
+          <option value="🏛️ ארנונה">🏛️ ארנונה</option>
+          <option value="🔥 גז">🔥 גז</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>תאריך</label>
+        <input type="date" id="fixed-date" />
+      </div>
+      <div class="field">
+        <label>תיאור</label>
+        <input type="text" id="fixed-description" placeholder="פירוט קצר..." />
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>כרטיס אשראי</label>
+      <div class="card-picker">
+        <div class="card-opt none-opt" data-card="" onclick="selectFixedCard(this)">
+          <span class="card-icon-text">✕</span>
+          <span class="card-name">ללא</span>
+        </div>
+        <div class="card-opt visa-max selected" data-card="ויזה מקס" onclick="selectFixedCard(this)">
+          <div class="card-logo visa-logo">
+            <span class="visa-text">VISA</span>
+            <span class="max-text">max</span>
+          </div>
+          <span class="card-name">ויזה מקס</span>
+        </div>
+        <div class="card-opt isracard-white" data-card="ישראכרט לבן" onclick="selectFixedCard(this)">
+          <div class="card-logo isr-white-logo">
+            <span>isracard</span>
+          </div>
+          <span class="card-name">ישראכרט</span>
+        </div>
+        <div class="card-opt isracard-gold" data-card="ישראכרט זהב" onclick="selectFixedCard(this)">
+          <div class="card-logo isr-gold-logo">
+            <span>isracard</span>
+          </div>
+          <span class="card-name">זהב</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" id="fixed-installment-field" style="margin-bottom:14px">
+      <label>סוג חיוב</label>
+      <div class="installment-row">
+        <div class="inst-btn selected" data-inst="רגיל" onclick="selectFixedInst(this)">רגיל</div>
+        <div class="inst-btn" data-inst="תשלומים" onclick="selectFixedInst(this)">תשלומים</div>
+        <div class="inst-btn" data-inst="קרדיט" onclick="selectFixedInst(this)">קרדיט</div>
+        <div class="inst-btn" data-inst="דחוי" onclick="selectFixedInst(this)">דחוי</div>
+      </div>
+    </div>
+
+    <button class="btn-submit expense-btn" id="fixed-add-btn" onclick="addFixedTransaction()">+ הוסף הוצאה קבועה</button>
+    <div class="status-msg" id="fixed-add-status"></div>
   </div>
 </div>
 
@@ -826,6 +926,9 @@
           <option value="💡 שירותים">💡 שירותים</option>
           <option value="🎁 מתנות">🎁 מתנות</option>
           <option value="✈️ נסיעות">✈️ נסיעות</option>
+          <option value="⛽ דלק">⛽ דלק</option>
+          <option value="💊 פארם">💊 פארם</option>
+          <option value="🅿️ חניה">🅿️ חניה</option>
           <option value="📦 אחר">📦 אחר</option>
         </select>
       </div>
@@ -845,11 +948,11 @@
     <div class="field" style="margin-bottom:14px">
       <label>כרטיס אשראי</label>
       <div class="card-picker">
-        <div class="card-opt none-opt selected" data-card="" onclick="selectCard(this)">
+        <div class="card-opt none-opt" data-card="" onclick="selectCard(this)">
           <span class="card-icon-text">✕</span>
           <span class="card-name">ללא</span>
         </div>
-        <div class="card-opt visa-max" data-card="ויזה מקס" onclick="selectCard(this)">
+        <div class="card-opt visa-max selected" data-card="ויזה מקס" onclick="selectCard(this)">
           <div class="card-logo visa-logo">
             <span class="visa-text">VISA</span>
             <span class="max-text">max</span>
@@ -871,7 +974,7 @@
       </div>
     </div>
 
-    <div class="field expense-only" id="installment-field" style="margin-bottom:14px; display:none">
+    <div class="field expense-only" id="installment-field" style="margin-bottom:14px; display:block">
       <label>סוג חיוב</label>
       <div class="installment-row">
         <div class="inst-btn selected" data-inst="רגיל" onclick="selectInst(this)">רגיל</div>
@@ -903,7 +1006,7 @@
   };
 
   /* NAV */
-  const tabMap = { dashboard: 0, transactions: 1, stats: 3 };
+  const tabMap = { dashboard: 0, transactions: 1, stats: 3, fixed: 4 };
 
   function switchTab(name, headerTabEl, navEl) {
     currentTabName = name;
@@ -994,6 +1097,7 @@
     renderRecent(monthTx);
     renderAll2(monthTx);
     renderStats(monthTx);
+    renderFixed();
   }
 
   function txHTML(tx) {
@@ -1104,7 +1208,7 @@
         document.getElementById('amount').value = '';
         document.getElementById('description').value = '';
         document.querySelectorAll('.card-opt').forEach(c=>c.classList.remove('selected'));
-        document.querySelector('.none-opt').classList.add('selected');
+        document.querySelector('.visa-max').classList.add('selected');
         document.querySelectorAll('.inst-btn').forEach(b=>b.classList.remove('selected'));
         document.querySelector('.inst-btn[data-inst="רגיל"]').classList.add('selected');
         setTimeout(closePanel, 1200);
@@ -1134,6 +1238,93 @@
     document.querySelectorAll('.inst-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
   }
+
+  let currentFixedFilter = 'all';
+  let currentFixedType = 'expense';
+
+  function handleFab() {
+    if (currentTabName === 'fixed') openFixedPanel();
+    else openPanel();
+  }
+
+  function openFixedPanel() {
+    document.getElementById('fixed-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('fixed-panel').classList.add('open');
+  }
+  function closeFixedPanel() {
+    document.getElementById('fixed-panel').classList.remove('open');
+  }
+
+  function setFixedType(type) {
+    currentFixedType = type;
+    document.getElementById('fixed-btn-expense').className = 'type-btn' + (type==='expense' ? ' active expense' : '');
+    document.getElementById('fixed-btn-income').className = 'type-btn' + (type==='income' ? ' active income' : '');
+    const btn = document.getElementById('fixed-add-btn');
+    btn.className = 'btn-submit ' + (type==='expense' ? 'expense-btn' : 'income-btn');
+    btn.textContent = type==='expense' ? '+ הוסף הוצאה קבועה' : '+ הוסף הכנסה קבועה';
+  }
+
+  function selectFixedCard(el) {
+    el.closest('.card-picker').querySelectorAll('.card-opt').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectFixedInst(el) {
+    el.closest('.installment-row').querySelectorAll('.inst-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function setFixedFilter(f, el) {
+    currentFixedFilter = f;
+    document.querySelectorAll('#view-fixed .filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderFixed();
+  }
+
+  function renderFixed() {
+    const monthTx = getMonthTx().filter(tx => tx.transactionGroup === 'fixed');
+    const filtered = currentFixedFilter==='all' ? monthTx : monthTx.filter(tx=>tx.type===currentFixedFilter);
+    const list = document.getElementById('fixed-list');
+    const count = document.getElementById('fixed-count');
+    count.textContent = filtered.length;
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty-state"><div class="emoji">📌</div><p>אין הוצאות קבועות החודש</p></div>';
+      return;
+    }
+    list.innerHTML = filtered.map(txHTML).join('');
+  }
+
+  async function addFixedTransaction() {
+    const amount = parseFloat(document.getElementById('fixed-amount').value);
+    const category = document.getElementById('fixed-category').value;
+    const date = document.getElementById('fixed-date').value;
+    const description = document.getElementById('fixed-description').value.trim();
+    const status = document.getElementById('fixed-add-status');
+    const creditCard = document.querySelector('#fixed-panel .card-opt.selected')?.dataset.card || '';
+    const installmentType = document.querySelector('#fixed-panel .inst-btn.selected')?.dataset.inst || '';
+
+    if (!amount || amount<=0) { showStatus(status,'error','❌ אנא הזן סכום תקין'); return; }
+    if (!date) { showStatus(status,'error','❌ אנא בחר תאריך'); return; }
+
+    showStatus(status,'loading','⏳ שומר...');
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({type:currentFixedType, amount, category, date, description, creditCard, installmentType, transactionGroup:'fixed'}),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showStatus(status,'success','✅ נשמר בהצלחה!');
+        document.getElementById('fixed-amount').value = '';
+        document.getElementById('fixed-description').value = '';
+        setTimeout(closeFixedPanel, 1200);
+        loadTransactions();
+      } else throw new Error();
+    } catch {
+      showStatus(status,'error','❌ שגיאה. נסה שוב.');
+    }
+  }
+
 </script>
 </body>
 </html>
