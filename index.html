@@ -1105,7 +1105,6 @@
   /* DATA */
   async function loadTransactions() {
     document.getElementById('recent-list').innerHTML = '<div class="loading-state">⏳ טוען...</div>';
-    document.getElementById('all-list').innerHTML = '<div class="loading-state">⏳ טוען...</div>';
     try {
       const res = await fetch(API_URL);
       const data = await res.json();
@@ -1137,7 +1136,6 @@
     balEl.textContent = (balance<0?'−':'')+fmt(balance);
 
     renderRecent(monthTx);
-    renderAll2(monthTx);
     renderStats(monthTx);
     renderFixed();
   }
@@ -1172,17 +1170,6 @@
     list.innerHTML = monthTx.slice(0,8).map(txHTML).join('');
   }
 
-  function renderAll2(monthTx) {
-    const filtered = currentFilter==='all' ? monthTx : monthTx.filter(tx=>tx.type===currentFilter);
-    const list = document.getElementById('all-list');
-    const count = document.getElementById('all-count');
-    count.textContent = filtered.length;
-    if (!filtered.length) {
-      list.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>אין עסקאות</p></div>';
-      return;
-    }
-    list.innerHTML = filtered.map(txHTML).join('');
-  }
 
   function renderStats(monthTx) {
     const expenses = monthTx.filter(t=>t.type==='expense');
