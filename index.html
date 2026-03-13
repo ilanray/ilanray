@@ -693,7 +693,6 @@
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchTab('dashboard', this)">📊 דשבורד</div>
-    <div class="tab" onclick="switchTab('transactions', this)">📋 עסקאות</div>
     <div class="tab" onclick="switchTab('stats', this)">📈 סטטיסטיקה</div>
     <div class="tab" onclick="switchTab('fixed', this)">📌 קבועות</div>
   </div>
@@ -725,22 +724,6 @@
       <div class="tx-count" id="recent-count">0 עסקאות</div>
     </div>
     <div class="tx-list" id="recent-list">
-      <div class="loading-state">⏳ טוען...</div>
-    </div>
-  </div>
-
-  <!-- TRANSACTIONS VIEW -->
-  <div class="view" id="view-transactions">
-    <div class="tx-header">
-      <div class="tx-title">כל העסקאות</div>
-      <div class="tx-count" id="all-count">0</div>
-    </div>
-    <div class="filter-row">
-      <button class="filter-btn active" onclick="setFilter('all', this)">הכל</button>
-      <button class="filter-btn" onclick="setFilter('expense', this)">הוצאות</button>
-      <button class="filter-btn" onclick="setFilter('income', this)">הכנסות</button>
-    </div>
-    <div class="tx-list" id="all-list">
       <div class="loading-state">⏳ טוען...</div>
     </div>
   </div>
@@ -794,10 +777,6 @@
   <div class="nav-item active" onclick="switchTab('dashboard', null, this)">
     <div class="nav-icon">📊</div>
     <div class="nav-label">דשבורד</div>
-  </div>
-  <div class="nav-item" onclick="switchTab('transactions', null, this)">
-    <div class="nav-icon">📋</div>
-    <div class="nav-label">עסקאות</div>
   </div>
   <button class="fab" id="main-fab" onclick="handleFab()">＋</button>
   <div class="nav-item" onclick="switchTab('stats', null, this)">
@@ -1006,7 +985,7 @@
   };
 
   /* NAV */
-  const tabMap = { dashboard: 0, transactions: 1, stats: 3, fixed: 4 };
+  const tabMap = { dashboard: 0, stats: 1, fixed: 2 };
 
   function switchTab(name, headerTabEl, navEl) {
     currentTabName = name;
