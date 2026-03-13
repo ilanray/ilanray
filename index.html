@@ -1247,7 +1247,12 @@
 
       for (let i = 0; i < (isMultiple ? installmentCount : 1); i++) {
         const txDate = new Date(date);
+        const baseDay = txDate.getDate();
+        txDate.setDate(1); // avoid day overflow issues
         txDate.setMonth(txDate.getMonth() + i);
+        // set day back, capped to last day of month
+        const maxDay = new Date(txDate.getFullYear(), txDate.getMonth()+1, 0).getDate();
+        txDate.setDate(Math.min(baseDay, maxDay));
         const txDateStr = txDate.toISOString().split('T')[0];
         const txDesc = isMultiple
           ? `${description || category} (תשלום ${i+1}/${installmentCount})`
