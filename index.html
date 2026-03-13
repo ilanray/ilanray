@@ -1231,32 +1231,55 @@
     const category = document.getElementById('category').value;
     const date = document.getElementById('date').value;
     const description = document.getElementById('description').value.trim();
-    const creditCard = document.querySelector('.card-opt.selected')?.dataset.card || '';
-    const installmentType = document.querySelector('.inst-btn.selected')?.dataset.inst || '';
     const status = document.getElementById('add-status');
+    const creditCard = document.querySelector('#add-panel .card-opt.selected')?.dataset.card || '';
+    const installmentType = document.querySelector('#installment-field .inst-btn.selected')?.dataset.inst || '';
+    const installmentCount = parseInt(document.querySelector('#installments-count-field .inst-count-btn.selected')?.dataset.count || '1');
 
     if (!amount || amount<=0) { showStatus(status,'error','❌ אנא הזן סכום תקין'); return; }
     if (!date) { showStatus(status,'error','❌ אנא בחר תאריך'); return; }
 
     showStatus(status,'loading','⏳ שומר...');
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({type:currentType, amount, category, date, description, creditCard, installmentType}),
-      });
-      const data = await res.json();
-      if (data.success) {
-        showStatus(status,'success','✅ נשמר בהצלחה!');
-        document.getElementById('amount').value = '';
-        document.getElementById('description').value = '';
-        document.querySelectorAll('.card-opt').forEach(c=>c.classList.remove('selected'));
-        document.querySelector('.visa-max').classList.add('selected');
-        document.querySelectorAll('.inst-btn').forEach(b=>b.classList.remove('selected'));
-        document.querySelector('.inst-btn[data-inst="רגיל"]').classList.add('selected');
-        setTimeout(closePanel, 1200);
-        loadTransactions();
-      } else throw new Error();
-    } catch {
+      const isMultiple = installmentType === 'תשלומים' && installmentCount > 1;
+      const perAmount = isMultiple ? parseFloat((amount / installmentCount).toFixed(2)) : amount;
+      const promises = [];
+
+      for (let i = 0; i < (isMultiple ? installmentCount : 1); i++) {
+        const txDate = new Date(date);
+        txDate.setMonth(txDate.getMonth() + i);
+        const txDateStr = txDate.toISOString().split('T')[0];
+        const txDesc = isMultiple
+          ? `${description || category} (תשלום ${i+1}/${installmentCount})`
+          : (description || '');
+
+        promises.push(fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            type: currentType, amount: perAmount, category,
+            date: txDateStr, description: txDesc,
+            creditCard, installmentType,
+            installmentCount: isMultiple ? installmentCount : 1,
+            installmentIndex: i + 1,
+            transactionGroup: 'regular'
+          }),
+        }));
+      }
+
+      await Promise.all(promises);
+      const msg = isMultiple ? `✅ ${installmentCount} תשלומים נשמרו!` : '✅ נשמר בהצלחה!';
+      showStatus(status, 'success', msg);
+      document.getElementById('amount').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('inst-preview').style.display = 'none';
+      document.getElementById('installments-count-field').style.display = 'none';
+      document.querySelectorAll('#add-panel .card-opt').forEach(c=>c.classList.remove('selected'));
+      document.querySelector('#add-panel .visa-max').classList.add('selected');
+      document.querySelectorAll('#installment-field .inst-btn').forEach(b=>b.classList.remove('selected'));
+      document.querySelector('#installment-field .inst-btn[data-inst="רגיל"]').classList.add('selected');
+      setTimeout(closePanel, 1400);
+      loadTransactions();
+    } catch(err) {
       showStatus(status,'error','❌ שגיאה. נסה שוב.');
     }
   }
