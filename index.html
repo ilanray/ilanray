@@ -1243,14 +1243,12 @@
     try {
       const isMultiple = installmentType === 'תשלומים' && installmentCount > 1;
       const perAmount = isMultiple ? parseFloat((amount / installmentCount).toFixed(2)) : amount;
-      const promises = [];
-
-      for (let i = 0; i < (isMultiple ? installmentCount : 1); i++) {
+      const total = isMultiple ? installmentCount : 1;
+      for (let i = 0; i < total; i++) {
         const txDate = new Date(date);
         const baseDay = txDate.getDate();
-        txDate.setDate(1); // avoid day overflow issues
+        txDate.setDate(1);
         txDate.setMonth(txDate.getMonth() + i);
-        // set day back, capped to last day of month
         const maxDay = new Date(txDate.getFullYear(), txDate.getMonth()+1, 0).getDate();
         txDate.setDate(Math.min(baseDay, maxDay));
         const txDateStr = txDate.toISOString().split('T')[0];
@@ -1258,7 +1256,7 @@
           ? `${description || category} (תשלום ${i+1}/${installmentCount})`
           : (description || '');
 
-        promises.push(fetch(API_URL, {
+        const res = await fetch(API_URL, {
           method: 'POST',
           body: JSON.stringify({
             type: currentType, amount: perAmount, category,
@@ -1268,10 +1266,9 @@
             installmentIndex: i + 1,
             transactionGroup: 'regular'
           }),
-        }));
+        });
+        await res.json();
       }
-
-      await Promise.all(promises);
       const msg = isMultiple ? `✅ ${installmentCount} תשלומים נשמרו!` : '✅ נשמר בהצלחה!';
       showStatus(status, 'success', msg);
       document.getElementById('amount').value = '';
