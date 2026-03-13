@@ -677,6 +677,50 @@
   }
   .inst-btn:active { transform: scale(0.96); }
 
+
+  /* INSTALLMENT COUNT */
+  .installments-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .inst-count-btn {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text2);
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .inst-count-btn:active { transform: scale(0.92); }
+  .inst-count-btn.selected {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: white;
+    box-shadow: 0 3px 10px rgba(124,58,237,0.25);
+  }
+
+  .inst-preview {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--purple);
+    text-align: center;
+    background: var(--purple-bg);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: none;
+  }
+
 </style>
 </head>
 <body>
@@ -887,7 +931,7 @@
     <div class="field-row">
       <div class="field">
         <label>סכום (₪)</label>
-        <input type="number" id="amount" placeholder="0.00" inputmode="decimal" />
+        <input type="number" id="amount" placeholder="0.00" inputmode="decimal" oninput="updateInstPreview()" />
       </div>
       <div class="field">
         <label>קטגוריה</label>
@@ -961,6 +1005,25 @@
         <div class="inst-btn" data-inst="קרדיט" onclick="selectInst(this)">קרדיט</div>
         <div class="inst-btn" data-inst="דחוי" onclick="selectInst(this)">דחוי</div>
       </div>
+    </div>
+
+    <div class="field" id="installments-count-field" style="margin-bottom:14px; display:none">
+      <label>מספר תשלומים</label>
+      <div class="installments-grid" id="installments-grid">
+        <div class="inst-count-btn selected" data-count="1" onclick="selectInstCount(this)">1</div>
+        <div class="inst-count-btn" data-count="2" onclick="selectInstCount(this)">2</div>
+        <div class="inst-count-btn" data-count="3" onclick="selectInstCount(this)">3</div>
+        <div class="inst-count-btn" data-count="4" onclick="selectInstCount(this)">4</div>
+        <div class="inst-count-btn" data-count="5" onclick="selectInstCount(this)">5</div>
+        <div class="inst-count-btn" data-count="6" onclick="selectInstCount(this)">6</div>
+        <div class="inst-count-btn" data-count="7" onclick="selectInstCount(this)">7</div>
+        <div class="inst-count-btn" data-count="8" onclick="selectInstCount(this)">8</div>
+        <div class="inst-count-btn" data-count="9" onclick="selectInstCount(this)">9</div>
+        <div class="inst-count-btn" data-count="10" onclick="selectInstCount(this)">10</div>
+        <div class="inst-count-btn" data-count="11" onclick="selectInstCount(this)">11</div>
+        <div class="inst-count-btn" data-count="12" onclick="selectInstCount(this)">12</div>
+      </div>
+      <div class="inst-preview" id="inst-preview"></div>
     </div>
 
     <button class="btn-submit expense-btn" id="add-btn" onclick="addTransaction()">+ הוסף הוצאה</button>
@@ -1214,8 +1277,36 @@
   }
 
   function selectInst(el) {
-    document.querySelectorAll('.inst-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('#installment-field .inst-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
+    const isInstallments = el.dataset.inst === 'תשלומים';
+    const countField = document.getElementById('installments-count-field');
+    countField.style.display = isInstallments ? 'block' : 'none';
+    if (!isInstallments) {
+      // reset count to 1
+      document.querySelectorAll('.inst-count-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelector('.inst-count-btn[data-count="1"]').classList.add('selected');
+      document.getElementById('inst-preview').style.display = 'none';
+    }
+  }
+
+  function selectInstCount(el) {
+    document.querySelectorAll('.inst-count-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    updateInstPreview();
+  }
+
+  function updateInstPreview() {
+    const count = parseInt(document.querySelector('.inst-count-btn.selected')?.dataset.count || 1);
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const preview = document.getElementById('inst-preview');
+    if (count > 1 && amount > 0) {
+      const perMonth = (amount / count).toFixed(2);
+      preview.textContent = `${count} תשלומים של ₪${perMonth} לחודש`;
+      preview.style.display = 'block';
+    } else {
+      preview.style.display = 'none';
+    }
   }
 
   let currentFixedFilter = 'all';
