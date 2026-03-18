@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>מנהל פיננסי</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f4f8;
+    --surface: #ffffff;
+    --border: #ebebf0;
+    --purple: #7c3aed;
+    --purple-light: #8b5cf6;
+    --purple-bg: #f3f0ff;
+    --income: #059669;
+    --income-bg: #ecfdf5;
+    --expense: #e11d48;
+    --expense-bg: #fff1f4;
+    --text: #111118;
+    --text2: #6b7280;
+    --text3: #b0b3be;
+    --radius: 16px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --nav-h: 68px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: calc(var(--nav-h) + 16px);
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--surface);
+    padding: 20px 20px 0;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .app-name {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.8px;
+    color: var(--text);
+  }
+
+  .month-pill {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 6px 5px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text2);
+  }
+
+  .month-pill button {
+    width: 26px; height: 26px;
+    border: none; background: none;
+    font-size: 16px; color: var(--text2);
+    cursor: pointer; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .month-pill button:active { background: var(--border); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    margin: 0 -20px;
+    padding: 0 20px;
+  }
+
+  .tab {
+    padding: 11px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+
+  /* ── MAIN ── */
+  .main { padding: 18px 16px; }
+
+  /* SUMMARY STRIP */
+  .summary-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .s-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 14px 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+
+  .s-card.balance-card {
+    background: linear-gradient(135deg, var(--purple), #6d28d9);
+    border: none;
+    box-shadow: 0 6px 24px rgba(124,58,237,0.28);
+    grid-column: span 1;
+  }
+
+  .s-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+  .balance-card .s-label { color: rgba(255,255,255,0.65); }
+
+  .s-amount {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.8px;
+    line-height: 1;
+  }
+  .income-scard .s-amount { color: var(--income); }
+  .expense-scard .s-amount { color: var(--expense); }
+  .balance-card .s-amount { color: #fff; font-size: 17px; }
+
+  /* ── ADD FORM ── */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 14px;
+    letter-spacing: -0.3px;
+  }
+
+  .type-row {
+    display: flex;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 14px;
+    gap: 4px;
+  }
+
+  .type-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    color: var(--text2);
+  }
+  .type-btn.active.expense {
+    background: var(--surface);
+    color: var(--expense);
+    box-shadow: 0 2px 8px rgba(225,29,72,0.12);
+  }
+  .type-btn.active.income {
+    background: var(--surface);
+    color: var(--income);
+    box-shadow: 0 2px 8px rgba(5,150,105,0.12);
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  .field label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .field input, .field select {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 13px;
+    color: var(--text);
+    font-family: 'Heebo', sans-serif;
+    font-size: 15px;
+    transition: all 0.15s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--purple-light);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
+  }
+  .field input::placeholder { color: var(--text3); }
+
+  .btn-submit {
+    width: 100%;
+    padding: 14px;
+    border-radius: 13px;
+    border: none;
+    font-family: 'Heebo', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.18s;
+    margin-top: 6px;
+    letter-spacing: -0.2px;
+  }
+  .btn-submit.expense-btn {
+    background: var(--expense);
+    color: white;
+    box-shadow: 0 6px 20px rgba(225,29,72,0.25);
+  }
+  .btn-submit.expense-btn:active { transform: scale(0.98); }
+  .btn-submit.income-btn {
+    background: var(--income);
+    color: white;
+    box-shadow: 0 6px 20px rgba(5,150,105,0.25);
+  }
+  .btn-submit.income-btn:active { transform: scale(0.98); }
+
+  /* STATUS */
+  .status-msg {
+    display: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 10px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .status-msg.success { background: var(--income-bg); color: var(--income); }
+  .status-msg.error { background: var(--expense-bg); color: var(--expense); }
+  .status-msg.loading { background: var(--purple-bg); color: var(--purple); }
+
+  /* ── TRANSACTIONS ── */
+  .tx-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .tx-title {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+  }
+
+  .tx-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    background: var(--bg);
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+
+  .filter-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    font-family: 'Heebo', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .filter-btn.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: white;
+    box-shadow: 0 4px 12px rgba(124,58,237,0.22);
+  }
+
+  .tx-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .tx-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    animation: fadeUp 0.2s ease;
+    transition: transform 0.15s;
+  }
+  .tx-item:active { transform: scale(0.99); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tx-icon {
+    width: 44px; height: 44px;
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .tx-icon.expense { background: var(--expense-bg); }
+  .tx-icon.income { background: var(--income-bg); }
+
+  .tx-info { flex: 1; min-width: 0; }
+  .tx-desc {
+    font-size: 15px; font-weight: 700;
+    color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tx-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  .tx-right { text-align: left; flex-shrink: 0; }
+
+  .tx-amount {
+    font-size: 16px; font-weight: 900;
+    letter-spacing: -0.5px; display: block;
+  }
+  .tx-amount.expense { color: var(--expense); }
+  .tx-amount.income { color: var(--income); }
+
+  .tx-date { font-size: 11px; color: var(--text3); margin-top: 2px; display: block; }
+
+  .empty-state {
+    text-align: center; padding: 48px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text3);
+  }
+  .empty-state .emoji { font-size: 40px; margin-bottom: 10px; }
+  .empty-state p { font-size: 14px; font-weight: 500; }
+
+  .loading-state { text-align: center; padding: 40px; color: var(--text3); font-size: 14px; }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--nav-h);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px 8px;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.15s;
+    color: var(--text3);
+  }
+  .nav-item.active { color: var(--purple); }
+
+  .nav-icon {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .nav-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  /* FAB */
+  .fab {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--purple-light), var(--purple));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 6px 20px rgba(124,58,237,0.35);
+    cursor: pointer;
+    transition: all 0.18s;
+    flex-shrink: 0;
+    color: white;
+    line-height: 1;
+    border: none;
+    margin-top: -16px;
+  }
+  .fab:active { transform: scale(0.94); }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* PANEL overlay for add form */
+  .add-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    align-items: flex-end;
+  }
+  .add-panel.open { display: flex; }
+
+  .panel-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(2px);
+  }
+
+  .panel-sheet {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 20px 40px;
+    width: 100%;
+    animation: slideUp 0.28s cubic-bezier(.32,1.2,.6,1);
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .panel-handle {
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 18px;
+  }
+
+  .panel-title {
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 16px;
+    letter-spacing: -0.4px;
+  }
+
+  /* STATS VIEW */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .stat-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-value { font-size: 20px; font-weight: 900; letter-spacing: -0.8px; }
+  .stat-card.purple .stat-value { color: var(--purple); }
+  .stat-card.green .stat-value { color: var(--income); }
+  .stat-card.red .stat-value { color: var(--expense); }
+
+  .cat-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .cat-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 13px 15px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .cat-emoji { font-size: 22px; width: 36px; text-align: center; flex-shrink: 0; }
+  .cat-info { flex: 1; }
+  .cat-name { font-size: 14px; font-weight: 700; }
+  .cat-bar-wrap { height: 4px; background: var(--bg); border-radius: 2px; margin-top: 5px; overflow: hidden; }
+  .cat-bar { height: 100%; border-radius: 2px; background: var(--purple); transition: width 0.5s ease; }
+  .cat-amount { font-size: 14px; font-weight: 800; color: var(--expense); }
+
+  ::-webkit-scrollbar { display: none; }
+
+  /* ── CARD PICKER ── */
+  .card-picker {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .card-opt {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 4px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.18s;
+    user-select: none;
+  }
+  .card-opt:active { transform: scale(0.96); }
+
+  .card-opt.selected { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
+
+  .card-name {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text2);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* None option */
+  .none-opt .card-icon-text {
+    font-size: 18px;
+    color: var(--text3);
+    line-height: 36px;
+    width: 52px;
+    text-align: center;
+  }
+
+  /* Card logo base */
+  .card-logo {
+    width: 52px;
+    height: 36px;
+    border-radius: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+
+  /* Visa Max — blue */
+  .visa-logo {
+    background: linear-gradient(135deg, #1a56db, #1e3a8a);
+    box-shadow: 0 3px 10px rgba(26,86,219,0.35);
+  }
+  .visa-text {
+    font-size: 12px;
+    font-weight: 900;
+    color: #fff;
+    font-style: italic;
+    letter-spacing: 1px;
+    line-height: 1;
+    font-family: serif;
+  }
+  .max-text {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  /* Isracard White */
+  .isr-white-logo {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+    font-size: 8px;
+    font-weight: 900;
+    color: #1e293b;
+    letter-spacing: 0.5px;
+    text-transform: lowercase;
+  }
+
+  /* Isracard Gold */
+  .isr-gold-logo {
+    background: linear-gradient(135deg, #f59e0b, #d97706, #b45309);
+    box-shadow: 0 3px 10px rgba(245,158,11,0.4);
+    font-size: 8px;
+    font-weight: 900;
+    color: #fff8e1;
+    letter-spacing: 0.5px;
+    text-transform: lowercase;
+  }
+
+  /* INSTALLMENT ROW */
+  .installment-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .inst-btn {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text2);
+    font-family: 'Heebo', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .inst-btn.selected {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: white;
+    box-shadow: 0 3px 10px rgba(124,58,237,0.22);
+  }
+  .inst-btn:active { transform: scale(0.96); }
+
+
+  /* INSTALLMENT COUNT */
+  .installments-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .inst-count-btn {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text2);
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .inst-count-btn:active { transform: scale(0.92); }
+  .inst-count-btn.selected {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: white;
+    box-shadow: 0 3px 10px rgba(124,58,237,0.25);
+  }
+
+  .inst-preview {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--purple);
+    text-align: center;
+    background: var(--purple-bg);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: none;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="app-name">מנהל פיננסי</div>
+    <div class="month-pill">
+      <button onclick="prevMonth()">‹</button>
+      <span id="month-label">—</span>
+      <button onclick="nextMonth()">›</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dashboard', this)">📊 דשבורד</div>
+    <div class="tab" onclick="switchTab('stats', this)">📈 סטטיסטיקה</div>
+    <div class="tab" onclick="switchTab('fixed', this)">📌 קבועות</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- DASHBOARD VIEW -->
+  <div class="view active" id="view-dashboard">
+    <div class="summary-strip">
+      <div class="s-card balance-card">
+        <div class="s-label">יתרה</div>
+        <div class="s-amount" id="balance-amount">₪0</div>
+      </div>
+      <div class="s-card income-scard">
+        <div class="s-label">הכנסות</div>
+        <div class="s-amount" id="income-amount">₪0</div>
+      </div>
+      <div class="s-card expense-scard">
+        <div class="s-label">הוצאות</div>
+        <div class="s-amount" id="expense-amount">₪0</div>
+      </div>
+    </div>
+
+    <!-- RECENT -->
+    <div class="tx-header">
+      <div class="tx-title">עסקאות אחרונות</div>
+      <div class="tx-count" id="recent-count">0 עסקאות</div>
+    </div>
+    <div class="tx-list" id="recent-list">
+      <div class="loading-state">⏳ טוען...</div>
+    </div>
+  </div>
+
+  <!-- STATS VIEW -->
+  <div class="view" id="view-stats">
+    <div class="stats-grid">
+      <div class="stat-card purple">
+        <div class="stat-label">סה"כ עסקאות</div>
+        <div class="stat-value" id="stat-count">0</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">ממוצע הכנסה</div>
+        <div class="stat-value" id="stat-avg-income">₪0</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">ממוצע הוצאה</div>
+        <div class="stat-value" id="stat-avg-expense">₪0</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">הוצאה הגדולה</div>
+        <div class="stat-value" id="stat-max">₪0</div>
+      </div>
+    </div>
+    <div class="tx-header" style="margin-top:4px">
+      <div class="tx-title">לפי קטגוריה</div>
+    </div>
+    <div class="cat-list" id="cat-list"></div>
+  </div>
+
+  <!-- FIXED EXPENSES VIEW -->
+  <div class="view" id="view-fixed">
+    <div class="tx-header">
+      <div class="tx-title">הוצאות קבועות</div>
+      <div class="tx-count" id="fixed-count">0</div>
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFixedFilter('all', this)">הכל</button>
+      <button class="filter-btn" onclick="setFixedFilter('expense', this)">הוצאות</button>
+      <button class="filter-btn" onclick="setFixedFilter('income', this)">הכנסות</button>
+    </div>
+    <div class="tx-list" id="fixed-list">
+      <div class="loading-state">⏳ טוען...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="switchTab('dashboard', null, this)">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">דשבורד</div>
+  </div>
+  <button class="fab" id="main-fab" onclick="handleFab()">＋</button>
+  <div class="nav-item" onclick="switchTab('stats', null, this)">
+    <div class="nav-icon">📈</div>
+    <div class="nav-label">סטטיסטיקה</div>
+  </div>
+  <div class="nav-item" onclick="switchTab('fixed', null, this)">
+    <div class="nav-icon">📌</div>
+    <div class="nav-label">קבועות</div>
+  </div>
+</div>
+
+<!-- FIXED ADD PANEL -->
+<div class="add-panel" id="fixed-panel">
+  <div class="panel-overlay" onclick="closeFixedPanel()"></div>
+  <div class="panel-sheet">
+    <div class="panel-handle"></div>
+    <div class="panel-title">הוספת הוצאה קבועה</div>
+
+    <div class="type-row">
+      <button class="type-btn active expense" id="fixed-btn-expense" onclick="setFixedType('expense')">📤 הוצאה</button>
+      <button class="type-btn income" id="fixed-btn-income" onclick="setFixedType('income')">📥 הכנסה</button>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>סכום (₪)</label>
+        <input type="number" id="fixed-amount" placeholder="0.00" inputmode="decimal" />
+      </div>
+      <div class="field">
+        <label>קטגוריה</label>
+        <select id="fixed-category">
+          <option value="⚡ חשמל">⚡ חשמל</option>
+          <option value="💧 מים">💧 מים</option>
+          <option value="🏛️ ארנונה">🏛️ ארנונה</option>
+          <option value="🔥 גז">🔥 גז</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>תאריך</label>
+        <input type="date" id="fixed-date" />
+      </div>
+      <div class="field">
+        <label>תיאור</label>
+        <input type="text" id="fixed-description" placeholder="פירוט קצר..." />
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>כרטיס אשראי</label>
+      <div class="card-picker">
+        <div class="card-opt none-opt" data-card="" onclick="selectFixedCard(this)">
+          <span class="card-icon-text">✕</span>
+          <span class="card-name">ללא</span>
+        </div>
+        <div class="card-opt visa-max selected" data-card="ויזה מקס" onclick="selectFixedCard(this)">
+          <div class="card-logo visa-logo">
+            <span class="visa-text">VISA</span>
+            <span class="max-text">max</span>
+          </div>
+          <span class="card-name">ויזה מקס</span>
+        </div>
+        <div class="card-opt isracard-white" data-card="ישראכרט לבן" onclick="selectFixedCard(this)">
+          <div class="card-logo isr-white-logo">
+            <span>isracard</span>
+          </div>
+          <span class="card-name">ישראכרט</span>
+        </div>
+        <div class="card-opt isracard-gold" data-card="ישראכרט זהב" onclick="selectFixedCard(this)">
+          <div class="card-logo isr-gold-logo">
+            <span>isracard</span>
+          </div>
+          <span class="card-name">זהב</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" id="fixed-installment-field" style="margin-bottom:14px">
+      <label>סוג חיוב</label>
+      <div class="installment-row">
+        <div class="inst-btn selected" data-inst="רגיל" onclick="selectFixedInst(this)">רגיל</div>
+        <div class="inst-btn" data-inst="תשלומים" onclick="selectFixedInst(this)">תשלומים</div>
+        <div class="inst-btn" data-inst="קרדיט" onclick="selectFixedInst(this)">קרדיט</div>
+        <div class="inst-btn" data-inst="דחוי" onclick="selectFixedInst(this)">דחוי</div>
+      </div>
+    </div>
+
+    <button class="btn-submit expense-btn" id="fixed-add-btn" onclick="addFixedTransaction()">+ הוסף הוצאה קבועה</button>
+    <div class="status-msg" id="fixed-add-status"></div>
+  </div>
+</div>
+
+<!-- ADD PANEL -->
+<div class="add-panel" id="add-panel">
+  <div class="panel-overlay" onclick="closePanel()"></div>
+  <div class="panel-sheet">
+    <div class="panel-handle"></div>
+    <div class="panel-title">הוספת עסקה</div>
+
+    <div class="type-row">
+      <button class="type-btn active expense" id="btn-expense" onclick="setType('expense')">📤 הוצאה</button>
+      <button class="type-btn income" id="btn-income" onclick="setType('income')">📥 הכנסה</button>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>סכום (₪)</label>
+        <input type="number" id="amount" placeholder="0.00" inputmode="decimal" oninput="updateInstPreview()" />
+      </div>
+      <div class="field">
+        <label>קטגוריה</label>
+        <select id="category">
+          <option value="🍔 אוכל">🍔 אוכל</option>
+          <option value="🚌 תחבורה">🚌 תחבורה</option>
+          <option value="🛒 קניות">🛒 קניות</option>
+          <option value="🏠 דיור">🏠 דיור</option>
+          <option value="💊 בריאות">💊 בריאות</option>
+          <option value="🎮 בידור">🎮 בידור</option>
+          <option value="📱 טלפון/אינטרנט">📱 טלפון/אינטרנט</option>
+          <option value="👕 ביגוד">👕 ביגוד</option>
+          <option value="📚 חינוך">📚 חינוך</option>
+          <option value="💼 משכורת">💼 משכורת</option>
+          <option value="💡 שירותים">💡 שירותים</option>
+          <option value="🎁 מתנות">🎁 מתנות</option>
+          <option value="✈️ נסיעות">✈️ נסיעות</option>
+          <option value="⛽ דלק">⛽ דלק</option>
+          <option value="💊 פארם">💊 פארם</option>
+          <option value="🅿️ חניה">🅿️ חניה</option>
+          <option value="📦 אחר">📦 אחר</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>תאריך</label>
+        <input type="date" id="date" />
+      </div>
+      <div class="field">
+        <label>תיאור</label>
+        <input type="text" id="description" placeholder="פירוט קצר..." />
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>כרטיס אשראי</label>
+      <div class="card-picker">
+        <div class="card-opt none-opt" data-card="" onclick="selectCard(this)">
+          <span class="card-icon-text">✕</span>
+          <span class="card-name">ללא</span>
+        </div>
+        <div class="card-opt visa-max selected" data-card="ויזה מקס" onclick="selectCard(this)">
+          <div class="card-logo visa-logo">
+            <span class="visa-text">VISA</span>
+            <span class="max-text">max</span>
+          </div>
+          <span class="card-name">ויזה מקס</span>
+        </div>
+        <div class="card-opt isracard-white" data-card="ישראכרט לבן" onclick="selectCard(this)">
+          <div class="card-logo isr-white-logo">
+            <span>isracard</span>
+          </div>
+          <span class="card-name">ישראכרט</span>
+        </div>
+        <div class="card-opt isracard-gold" data-card="ישראכרט זהב" onclick="selectCard(this)">
+          <div class="card-logo isr-gold-logo">
+            <span>isracard</span>
+          </div>
+          <span class="card-name">זהב</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field expense-only" id="installment-field" style="margin-bottom:14px; display:block">
+      <label>סוג חיוב</label>
+      <div class="installment-row">
+        <div class="inst-btn selected" data-inst="רגיל" onclick="selectInst(this)">רגיל</div>
+        <div class="inst-btn" data-inst="תשלומים" onclick="selectInst(this)">תשלומים</div>
+        <div class="inst-btn" data-inst="קרדיט" onclick="selectInst(this)">קרדיט</div>
+        <div class="inst-btn" data-inst="דחוי" onclick="selectInst(this)">דחוי</div>
+      </div>
+    </div>
+
+    <div class="field" id="installments-count-field" style="margin-bottom:14px; display:none">
+      <label>מספר תשלומים</label>
+      <div class="installments-grid" id="installments-grid">
+        <div class="inst-count-btn selected" data-count="1" onclick="selectInstCount(this)">1</div>
+        <div class="inst-count-btn" data-count="2" onclick="selectInstCount(this)">2</div>
+        <div class="inst-count-btn" data-count="3" onclick="selectInstCount(this)">3</div>
+        <div class="inst-count-btn" data-count="4" onclick="selectInstCount(this)">4</div>
+        <div class="inst-count-btn" data-count="5" onclick="selectInstCount(this)">5</div>
+        <div class="inst-count-btn" data-count="6" onclick="selectInstCount(this)">6</div>
+        <div class="inst-count-btn" data-count="7" onclick="selectInstCount(this)">7</div>
+        <div class="inst-count-btn" data-count="8" onclick="selectInstCount(this)">8</div>
+        <div class="inst-count-btn" data-count="9" onclick="selectInstCount(this)">9</div>
+        <div class="inst-count-btn" data-count="10" onclick="selectInstCount(this)">10</div>
+        <div class="inst-count-btn" data-count="11" onclick="selectInstCount(this)">11</div>
+        <div class="inst-count-btn" data-count="12" onclick="selectInstCount(this)">12</div>
+      </div>
+      <div class="inst-preview" id="inst-preview"></div>
+    </div>
+
+    <button class="btn-submit expense-btn" id="add-btn" onclick="addTransaction()">+ הוסף הוצאה</button>
+    <div class="status-msg" id="add-status"></div>
+  </div>
+</div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycby4vK7G3N7L5HXKmL9bIwtf1eVhQUvYAQvqwn06HmCdIpIxjOEUDtdr2sGnI1ZGKgKx/exec';
+  let allTransactions = [];
+  let currentFilter = 'all';
+  let currentType = 'expense';
+  let currentMonth = new Date().getMonth();
+  let currentYear = new Date().getFullYear();
+  let currentTabName = 'dashboard';
+  const MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+  window.onload = () => {
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    updateMonthLabel();
+    loadTransactions();
+  };
+
+  /* NAV */
+  const tabMap = { dashboard: 0, stats: 1, fixed: 2 };
+
+  function switchTab(name, headerTabEl, navEl) {
+    currentTabName = name;
+    // hide all views
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    // header tabs
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    if (headerTabEl) headerTabEl.classList.add('active');
+    else document.querySelectorAll('.tab')[tabMap[name] !== undefined ? tabMap[name] : 0].classList.add('active');
+    // bottom nav
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (navEl) navEl.classList.add('active');
+    renderAll();
+  }
+
+  function prevMonth() {
+    currentMonth--;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    updateMonthLabel(); renderAll();
+  }
+  function nextMonth() {
+    currentMonth++;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    updateMonthLabel(); renderAll();
+  }
+  function updateMonthLabel() {
+    document.getElementById('month-label').textContent = `${MONTHS[currentMonth]} ${currentYear}`;
+  }
+
+  /* PANEL */
+  function openPanel() {
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('add-panel').classList.add('open');
+  }
+  function closePanel() { document.getElementById('add-panel').classList.remove('open'); }
+
+  function setType(type) {
+    currentType = type;
+    document.getElementById('btn-expense').className = 'type-btn' + (type==='expense' ? ' active expense' : '');
+    document.getElementById('btn-income').className = 'type-btn' + (type==='income' ? ' active income' : '');
+    const btn = document.getElementById('add-btn');
+    btn.className = 'btn-submit ' + (type==='expense' ? 'expense-btn' : 'income-btn');
+    btn.textContent = type==='expense' ? '+ הוסף הוצאה' : '+ הוסף הכנסה';
+  }
+
+  function setFilter(f, el) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderAll();
+  }
+
+  /* DATA */
+  async function loadTransactions() {
+    document.getElementById('recent-list').innerHTML = '<div class="loading-state">⏳ טוען...</div>';
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      allTransactions = (data.data || []).reverse();
+      renderAll();
+    } catch {
+      document.getElementById('recent-list').innerHTML =
+        '<div class="empty-state"><div class="emoji">⚠️</div><p>שגיאה בטעינת נתונים</p></div>';
+    }
+  }
+
+  function getMonthTx() {
+    return allTransactions.filter(tx => {
+      const d = new Date(tx.date);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+  }
+
+  function renderAll() {
+    const monthTx = getMonthTx();
+    const regularTx = monthTx.filter(t => t.transactionGroup !== 'fixed');
+    const totalIncome = regularTx.filter(t=>t.type==='income').reduce((s,t)=>s+Number(t.amount),0);
+    const totalExpense = regularTx.filter(t=>t.type==='expense').reduce((s,t)=>s+Number(t.amount),0);
+    const balance = totalIncome - totalExpense;
+    const fmt = n => '₪' + Math.abs(n).toLocaleString('he-IL',{maximumFractionDigits:0});
+
+    document.getElementById('income-amount').textContent = fmt(totalIncome);
+    document.getElementById('expense-amount').textContent = fmt(totalExpense);
+    const balEl = document.getElementById('balance-amount');
+    balEl.textContent = (balance<0?'−':'')+fmt(balance);
+
+    renderRecent(monthTx);
+    renderStats(monthTx);
+    renderFixed();
+  }
+
+  function txHTML(tx) {
+    const cat = tx.category || '📦 אחר';
+    const emoji = cat.split(' ')[0];
+    const d = new Date(tx.date);
+    const dateStr = d.toLocaleDateString('he-IL',{day:'numeric',month:'short'});
+    return `
+      <div class="tx-item">
+        <div class="tx-icon ${tx.type}">${emoji}</div>
+        <div class="tx-info">
+          <div class="tx-desc">${tx.description || cat}</div>
+          <div class="tx-meta">${cat}</div>
+        </div>
+        <div class="tx-right">
+          <span class="tx-amount ${tx.type}">${tx.type==='expense'?'−':'+'}₪${Number(tx.amount).toLocaleString('he-IL',{maximumFractionDigits:0})}</span>
+          <span class="tx-date">${dateStr}</span>
+        </div>
+      </div>`;
+  }
+
+  function renderRecent(monthTx) {
+    const list = document.getElementById('recent-list');
+    const count = document.getElementById('recent-count');
+    const regularTx = monthTx.filter(tx => tx.transactionGroup !== 'fixed');
+    count.textContent = regularTx.length + ' עסקאות';
+    if (!regularTx.length) {
+      list.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>אין עסקאות החודש</p></div>';
+      return;
+    }
+    list.innerHTML = regularTx.map(txHTML).join('');
+  }
+
+
+  function renderStats(monthTx) {
+    const expenses = monthTx.filter(t=>t.type==='expense');
+    const incomes = monthTx.filter(t=>t.type==='income');
+    const fmt = n => '₪' + Math.abs(n).toLocaleString('he-IL',{maximumFractionDigits:0});
+
+    document.getElementById('stat-count').textContent = monthTx.length;
+    document.getElementById('stat-avg-income').textContent = incomes.length
+      ? fmt(incomes.reduce((s,t)=>s+Number(t.amount),0)/incomes.length) : '₪0';
+    document.getElementById('stat-avg-expense').textContent = expenses.length
+      ? fmt(expenses.reduce((s,t)=>s+Number(t.amount),0)/expenses.length) : '₪0';
+    const maxExp = expenses.length ? Math.max(...expenses.map(t=>Number(t.amount))) : 0;
+    document.getElementById('stat-max').textContent = fmt(maxExp);
+
+    // categories
+    const catMap = {};
+    expenses.forEach(tx => {
+      const cat = tx.category || '📦 אחר';
+      catMap[cat] = (catMap[cat]||0) + Number(tx.amount);
+    });
+    const sorted = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+    const maxVal = sorted[0]?.[1] || 1;
+
+    const catList = document.getElementById('cat-list');
+    if (!sorted.length) {
+      catList.innerHTML = '<div class="empty-state"><div class="emoji">📊</div><p>אין נתונים</p></div>';
+      return;
+    }
+    catList.innerHTML = sorted.map(([cat, amt]) => {
+      const emoji = cat.split(' ')[0];
+      const pct = Math.round((amt/maxVal)*100);
+      return `
+        <div class="cat-item">
+          <div class="cat-emoji">${emoji}</div>
+          <div class="cat-info">
+            <div class="cat-name">${cat}</div>
+            <div class="cat-bar-wrap"><div class="cat-bar" style="width:${pct}%"></div></div>
+          </div>
+          <div class="cat-amount">₪${amt.toLocaleString('he-IL',{maximumFractionDigits:0})}</div>
+        </div>`;
+    }).join('');
+  }
+
+  async function addTransaction() {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const category = document.getElementById('category').value;
+    const date = document.getElementById('date').value;
+    const description = document.getElementById('description').value.trim();
+    const status = document.getElementById('add-status');
+    const creditCard = document.querySelector('#add-panel .card-opt.selected')?.dataset.card || '';
+    const installmentType = document.querySelector('#installment-field .inst-btn.selected')?.dataset.inst || '';
+    const installmentCount = parseInt(document.querySelector('#installments-count-field .inst-count-btn.selected')?.dataset.count || '1');
+
+    if (!amount || amount<=0) { showStatus(status,'error','❌ אנא הזן סכום תקין'); return; }
+    if (!date) { showStatus(status,'error','❌ אנא בחר תאריך'); return; }
+
+    showStatus(status,'loading','⏳ שומר...');
+    try {
+      const isMultiple = installmentType === 'תשלומים' && installmentCount > 1;
+      const perAmount = isMultiple ? parseFloat((amount / installmentCount).toFixed(2)) : amount;
+      const total = isMultiple ? installmentCount : 1;
+      for (let i = 0; i < total; i++) {
+        const txDate = new Date(date);
+        const baseDay = txDate.getDate();
+        txDate.setDate(1);
+        txDate.setMonth(txDate.getMonth() + i);
+        const maxDay = new Date(txDate.getFullYear(), txDate.getMonth()+1, 0).getDate();
+        txDate.setDate(Math.min(baseDay, maxDay));
+        const txDateStr = txDate.toISOString().split('T')[0];
+        const txDesc = isMultiple
+          ? `${description || category} (תשלום ${i+1}/${installmentCount})`
+          : (description || '');
+
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            type: currentType, amount: perAmount, category,
+            date: txDateStr, description: txDesc,
+            creditCard, installmentType,
+            chargeDate: (() => {
+              const d = new Date(txDateStr);
+              const next = d.getDate() >= 15
+                ? new Date(d.getFullYear(), d.getMonth() + 1, 15)
+                : new Date(d.getFullYear(), d.getMonth(), 15);
+              const dd = String(next.getDate()).padStart(2,'0');
+              const mm = String(next.getMonth()+1).padStart(2,'0');
+              const yyyy = next.getFullYear();
+              return `${dd}/${mm}/${yyyy}`;
+            })(),
+            transactionGroup: 'regular'
+          }),
+        });
+        await res.json();
+      }
+      const msg = isMultiple ? `✅ ${installmentCount} תשלומים נשמרו!` : '✅ נשמר בהצלחה!';
+      showStatus(status, 'success', msg);
+      document.getElementById('amount').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('inst-preview').style.display = 'none';
+      document.getElementById('installments-count-field').style.display = 'none';
+      document.querySelectorAll('#add-panel .card-opt').forEach(c=>c.classList.remove('selected'));
+      document.querySelector('#add-panel .visa-max').classList.add('selected');
+      document.querySelectorAll('#installment-field .inst-btn').forEach(b=>b.classList.remove('selected'));
+      document.querySelector('#installment-field .inst-btn[data-inst="רגיל"]').classList.add('selected');
+      setTimeout(closePanel, 1400);
+      loadTransactions();
+    } catch(err) {
+      showStatus(status,'error','❌ שגיאה. נסה שוב.');
+    }
+  }
+
+  function showStatus(el, type, msg) {
+    el.className = 'status-msg ' + type;
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (type !== 'loading') setTimeout(() => el.style.display = 'none', 3000);
+  }
+
+  function selectCard(el) {
+    document.querySelectorAll('.card-opt').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const hasCard = el.dataset.card !== '';
+    const instField = document.getElementById('installment-field');
+    instField.style.display = hasCard ? 'block' : 'none';
+  }
+
+  function selectInst(el) {
+    document.querySelectorAll('#installment-field .inst-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    const isInstallments = el.dataset.inst === 'תשלומים';
+    const countField = document.getElementById('installments-count-field');
+    countField.style.display = isInstallments ? 'block' : 'none';
+    if (!isInstallments) {
+      // reset count to 1
+      document.querySelectorAll('.inst-count-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelector('.inst-count-btn[data-count="1"]').classList.add('selected');
+      document.getElementById('inst-preview').style.display = 'none';
+    }
+  }
+
+  function selectInstCount(el) {
+    document.querySelectorAll('.inst-count-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    updateInstPreview();
+  }
+
+  function updateInstPreview() {
+    const count = parseInt(document.querySelector('.inst-count-btn.selected')?.dataset.count || 1);
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const preview = document.getElementById('inst-preview');
+    if (count > 1 && amount > 0) {
+      const perMonth = (amount / count).toFixed(2);
+      preview.textContent = `${count} תשלומים של ₪${perMonth} לחודש`;
+      preview.style.display = 'block';
+    } else {
+      preview.style.display = 'none';
+    }
+  }
+
+  let currentFixedFilter = 'all';
+  let currentFixedType = 'expense';
+
+  function handleFab() {
+    if (currentTabName === 'fixed') openFixedPanel();
+    else openPanel();
+  }
+
+  function openFixedPanel() {
+    document.getElementById('fixed-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('fixed-panel').classList.add('open');
+  }
+  function closeFixedPanel() {
+    document.getElementById('fixed-panel').classList.remove('open');
+  }
+
+  function setFixedType(type) {
+    currentFixedType = type;
+    document.getElementById('fixed-btn-expense').className = 'type-btn' + (type==='expense' ? ' active expense' : '');
+    document.getElementById('fixed-btn-income').className = 'type-btn' + (type==='income' ? ' active income' : '');
+    const btn = document.getElementById('fixed-add-btn');
+    btn.className = 'btn-submit ' + (type==='expense' ? 'expense-btn' : 'income-btn');
+    btn.textContent = type==='expense' ? '+ הוסף הוצאה קבועה' : '+ הוסף הכנסה קבועה';
+  }
+
+  function selectFixedCard(el) {
+    el.closest('.card-picker').querySelectorAll('.card-opt').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectFixedInst(el) {
+    el.closest('.installment-row').querySelectorAll('.inst-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function setFixedFilter(f, el) {
+    currentFixedFilter = f;
+    document.querySelectorAll('#view-fixed .filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderFixed();
+  }
+
+  function renderFixed() {
+    const monthTx = getMonthTx().filter(tx => tx.transactionGroup === 'fixed');
+    const filtered = currentFixedFilter==='all' ? monthTx : monthTx.filter(tx=>tx.type===currentFixedFilter);
+    const list = document.getElementById('fixed-list');
+    const count = document.getElementById('fixed-count');
+    count.textContent = filtered.length;
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty-state"><div class="emoji">📌</div><p>אין הוצאות קבועות החודש</p></div>';
+      return;
+    }
+    list.innerHTML = filtered.map(txHTML).join('');
+  }
+
+  async function addFixedTransaction() {
+    const amount = parseFloat(document.getElementById('fixed-amount').value);
+    const category = document.getElementById('fixed-category').value;
+    const date = document.getElementById('fixed-date').value;
+    const description = document.getElementById('fixed-description').value.trim();
+    const status = document.getElementById('fixed-add-status');
+    const creditCard = document.querySelector('#fixed-panel .card-opt.selected')?.dataset.card || '';
+    const installmentType = document.querySelector('#fixed-panel .inst-btn.selected')?.dataset.inst || '';
+
+    if (!amount || amount<=0) { showStatus(status,'error','❌ אנא הזן סכום תקין'); return; }
+    if (!date) { showStatus(status,'error','❌ אנא בחר תאריך'); return; }
+
+    showStatus(status,'loading','⏳ שומר...');
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({type:currentFixedType, amount, category, date, description, creditCard, installmentType, transactionGroup:'fixed'}),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showStatus(status,'success','✅ נשמר בהצלחה!');
+        document.getElementById('fixed-amount').value = '';
+        document.getElementById('fixed-description').value = '';
+        setTimeout(closeFixedPanel, 1200);
+        loadTransactions();
+      } else throw new Error();
+    } catch {
+      showStatus(status,'error','❌ שגיאה. נסה שוב.');
+    }
+  }
+
+</script>
+</body>
+</html>
