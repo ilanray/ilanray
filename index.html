@@ -754,7 +754,6 @@
   <div class="tabs">
     <div class="tab active" onclick="switchTab('dashboard', this)">💸 הוצאות</div>
     <div class="tab" onclick="switchTab('stats', this)">📈 סטטיסטיקה</div>
-    <div class="tab" onclick="switchTab('fixed', this)">🏦 מהחשבון</div>
   </div>
 </div>
 
@@ -843,10 +842,7 @@
     <div class="nav-icon">📈</div>
     <div class="nav-label">סטטיסטיקה</div>
   </div>
-  <div class="nav-item" onclick="switchTab('fixed', null, this)">
-    <div class="nav-icon">📌</div>
-    <div class="nav-label">קבועות</div>
-  </div>
+
 </div>
 
 <!-- FIXED ADD PANEL -->
@@ -941,8 +937,8 @@
     <div class="panel-title">הוספת עסקה</div>
 
     <div class="type-row">
-      <button class="type-btn active expense" id="btn-expense" onclick="setType('expense')">📤 הוצאה</button>
-      <button class="type-btn income" id="btn-income" onclick="setType('income')">📥 הכנסה</button>
+      <button class="type-btn active expense" id="btn-expense" onclick="setType('expense')">💳 הוצאה מהכרטיס</button>
+      <button class="type-btn" id="btn-income" onclick="closePanel(); openFixedPanel();">🏦 הוצאה מהחשבון</button>
     </div>
 
     <div class="field-row">
@@ -1035,7 +1031,7 @@
       <div class="inst-preview" id="inst-preview"></div>
     </div>
 
-    <button class="btn-submit expense-btn" id="add-btn" onclick="addTransaction()">+ הוסף הוצאה</button>
+    <button class="btn-submit expense-btn" id="add-btn" onclick="addTransaction()">+ הוסף הוצאה מהכרטיס</button>
     <div class="status-msg" id="add-status"></div>
   </div>
 </div>
@@ -1098,10 +1094,6 @@
   function setType(type) {
     currentType = type;
     document.getElementById('btn-expense').className = 'type-btn' + (type==='expense' ? ' active expense' : '');
-    document.getElementById('btn-income').className = 'type-btn' + (type==='income' ? ' active income' : '');
-    const btn = document.getElementById('add-btn');
-    btn.className = 'btn-submit ' + (type==='expense' ? 'expense-btn' : 'income-btn');
-    btn.textContent = type==='expense' ? '+ הוסף הוצאה' : '+ הוסף הכנסה';
   }
 
   function setFilter(f, el) {
