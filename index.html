@@ -754,6 +754,7 @@
   <div class="tabs">
     <div class="tab active" onclick="switchTab('dashboard', this)">💸 הוצאות</div>
     <div class="tab" onclick="switchTab('stats', this)">📈 סטטיסטיקה</div>
+    <div class="tab" onclick="switchTab('income', this)">💰 הכנסות</div>
   </div>
 </div>
 
@@ -829,6 +830,17 @@
     </div>
   </div>
 
+  <!-- INCOME VIEW -->
+  <div class="view" id="view-income">
+    <div class="tx-header">
+      <div class="tx-title">הכנסות</div>
+      <div class="tx-count" id="income-count">0</div>
+    </div>
+    <div class="tx-list" id="income-list">
+      <div class="loading-state">⏳ טוען...</div>
+    </div>
+  </div>
+
 </div>
 
 <!-- BOTTOM NAV -->
@@ -882,6 +894,43 @@
 
     <button class="btn-submit expense-btn" id="fixed-add-btn" onclick="addFixedTransaction()">+ הוסף הוצאה מהחשבון</button>
     <div class="status-msg" id="fixed-add-status"></div>
+  </div>
+</div>
+
+<!-- INCOME ADD PANEL -->
+<div class="add-panel" id="income-panel">
+  <div class="panel-overlay" onclick="closeIncomePanel()"></div>
+  <div class="panel-sheet">
+    <div class="panel-handle"></div>
+    <div class="panel-title">הוספת הכנסה</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>סכום (₪)</label>
+        <input type="number" id="income-amount" placeholder="0.00" inputmode="decimal" />
+      </div>
+      <div class="field">
+        <label>קטגוריה</label>
+        <select id="income-category">
+          <option value="💸 העברה לחשבון">💸 העברה לחשבון</option>
+          <option value="💼 משכורת">💼 משכורת</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>תאריך</label>
+        <input type="date" id="income-date" />
+      </div>
+      <div class="field">
+        <label>תיאור</label>
+        <input type="text" id="income-description" placeholder="פירוט קצר..." />
+      </div>
+    </div>
+
+    <button class="btn-submit income-btn" onclick="addIncomeTransaction()">+ הוסף הכנסה</button>
+    <div class="status-msg" id="income-add-status"></div>
   </div>
 </div>
 
@@ -1009,7 +1058,7 @@
   };
 
   /* NAV */
-  const tabMap = { dashboard: 0, stats: 1, fixed: 2 };
+  const tabMap = { dashboard: 0, stats: 1, income: 2 };
 
   function switchTab(name, headerTabEl, navEl) {
     currentTabName = name;
@@ -1096,6 +1145,7 @@
     renderRecent(monthTx);
     renderStats(monthTx);
     renderFixed();
+    renderIncome();
   }
 
   function txHTML(tx) {
@@ -1146,7 +1196,14 @@
     const regularTx = monthTx.filter(tx => tx.transactionGroup !== 'fixed');
     count.textContent = regularTx.length + ' עסקאות';
     if (!regularTx.length) {
-      list.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>אין עסקאות החודש</p></div>';
+      // If no transactions this month, show last 20 from all time
+      const allRegular = allTransactions.filter(tx => tx.transactionGroup !== 'fixed');
+      if (!allRegular.length) {
+        list.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>אין עסקאות עדיין</p></div>';
+        return;
+      }
+      list.innerHTML = '<div style="font-size:12px;color:var(--text3);margin-bottom:8px;text-align:center">אין עסקאות החודש — מציג עסקאות אחרונות</div>' +
+        allRegular.slice(0, 20).map(txHTML).join('');
       return;
     }
     list.innerHTML = regularTx.map(txHTML).join('');
@@ -1314,10 +1371,7 @@
   let currentFixedFilter = 'all';
   let currentFixedType = 'expense';
 
-  function handleFab() {
-    if (currentTabName === 'fixed') openFixedPanel();
-    else openPanel();
-  }
+
 
   function openFixedPanel() {
     document.getElementById('fixed-date').value = new Date().toISOString().split('T')[0];
@@ -1388,6 +1442,62 @@
         document.getElementById('fixed-amount').value = '';
         document.getElementById('fixed-description').value = '';
         setTimeout(closeFixedPanel, 1200);
+        loadTransactions();
+      } else throw new Error();
+    } catch {
+      showStatus(status,'error','❌ שגיאה. נסה שוב.');
+    }
+  }
+
+
+  function handleFab() {
+    if (currentTabName === 'fixed') openFixedPanel();
+    else if (currentTabName === 'income') openIncomePanel();
+    else openPanel();
+  }
+
+  function openIncomePanel() {
+    document.getElementById('income-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('income-panel').classList.add('open');
+  }
+  function closeIncomePanel() {
+    document.getElementById('income-panel').classList.remove('open');
+  }
+
+  function renderIncome() {
+    const monthTx = getMonthTx().filter(tx => tx.type === 'income');
+    const list = document.getElementById('income-list');
+    const count = document.getElementById('income-count');
+    count.textContent = monthTx.length;
+    if (!monthTx.length) {
+      list.innerHTML = '<div class="empty-state"><div class="emoji">💰</div><p>אין הכנסות החודש</p></div>';
+      return;
+    }
+    list.innerHTML = monthTx.map(txHTML).join('');
+  }
+
+  async function addIncomeTransaction() {
+    const amount = parseFloat(document.getElementById('income-amount').value);
+    const category = document.getElementById('income-category').value;
+    const date = document.getElementById('income-date').value;
+    const description = document.getElementById('income-description').value.trim();
+    const status = document.getElementById('income-add-status');
+
+    if (!amount || amount<=0) { showStatus(status,'error','❌ אנא הזן סכום תקין'); return; }
+    if (!date) { showStatus(status,'error','❌ אנא בחר תאריך'); return; }
+
+    showStatus(status,'loading','⏳ שומר...');
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({type:'income', amount, category, date, description, creditCard:'', installmentType:'', transactionGroup:'income'}),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showStatus(status,'success','✅ נשמר בהצלחה!');
+        document.getElementById('income-amount').value = '';
+        document.getElementById('income-description').value = '';
+        setTimeout(closeIncomePanel, 1200);
         loadTransactions();
       } else throw new Error();
     } catch {
