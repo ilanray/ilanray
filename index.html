@@ -852,11 +852,6 @@
     <div class="panel-handle"></div>
     <div class="panel-title">הוספת הוצאה מהחשבון</div>
 
-    <div class="type-row">
-      <button class="type-btn active expense" id="fixed-btn-expense" onclick="setFixedType('expense')">📤 הוצאה</button>
-      <button class="type-btn income" id="fixed-btn-income" onclick="setFixedType('income')">📥 הכנסה</button>
-    </div>
-
     <div class="field-row">
       <div class="field">
         <label>סכום (₪)</label>
@@ -882,45 +877,6 @@
       <div class="field">
         <label>תיאור</label>
         <input type="text" id="fixed-description" placeholder="פירוט קצר..." />
-      </div>
-    </div>
-
-    <div class="field" style="margin-bottom:14px">
-      <label>כרטיס אשראי</label>
-      <div class="card-picker">
-        <div class="card-opt none-opt" data-card="" onclick="selectFixedCard(this)">
-          <span class="card-icon-text">✕</span>
-          <span class="card-name">ללא</span>
-        </div>
-        <div class="card-opt visa-max selected" data-card="ויזה מקס" onclick="selectFixedCard(this)">
-          <div class="card-logo visa-logo">
-            <span class="visa-text">VISA</span>
-            <span class="max-text">max</span>
-          </div>
-          <span class="card-name">ויזה מקס</span>
-        </div>
-        <div class="card-opt isracard-white" data-card="ישראכרט לבן" onclick="selectFixedCard(this)">
-          <div class="card-logo isr-white-logo">
-            <span>isracard</span>
-          </div>
-          <span class="card-name">ישראכרט</span>
-        </div>
-        <div class="card-opt isracard-gold" data-card="ישראכרט זהב" onclick="selectFixedCard(this)">
-          <div class="card-logo isr-gold-logo">
-            <span>isracard</span>
-          </div>
-          <span class="card-name">זהב</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="field" id="fixed-installment-field" style="margin-bottom:14px">
-      <label>סוג חיוב</label>
-      <div class="installment-row">
-        <div class="inst-btn selected" data-inst="רגיל" onclick="selectFixedInst(this)">רגיל</div>
-        <div class="inst-btn" data-inst="תשלומים" onclick="selectFixedInst(this)">תשלומים</div>
-        <div class="inst-btn" data-inst="קרדיט" onclick="selectFixedInst(this)">קרדיט</div>
-        <div class="inst-btn" data-inst="דחוי" onclick="selectFixedInst(this)">דחוי</div>
       </div>
     </div>
 
@@ -1416,8 +1372,6 @@
     const date = document.getElementById('fixed-date').value;
     const description = document.getElementById('fixed-description').value.trim();
     const status = document.getElementById('fixed-add-status');
-    const creditCard = document.querySelector('#fixed-panel .card-opt.selected')?.dataset.card || '';
-    const installmentType = document.querySelector('#fixed-panel .inst-btn.selected')?.dataset.inst || '';
 
     if (!amount || amount<=0) { showStatus(status,'error','❌ אנא הזן סכום תקין'); return; }
     if (!date) { showStatus(status,'error','❌ אנא בחר תאריך'); return; }
@@ -1426,7 +1380,7 @@
     try {
       const res = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({type:currentFixedType, amount, category, date, description, creditCard, installmentType, transactionGroup:'fixed'}),
+        body: JSON.stringify({type:'expense', amount, category, date, description, creditCard:'', installmentType:'', transactionGroup:'fixed'}),
       });
       const data = await res.json();
       if (data.success) {
