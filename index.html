@@ -721,6 +721,22 @@
     display: none;
   }
 
+
+  .tx-delete {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    opacity: 0.4;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    margin-right: -4px;
+  }
+  .tx-delete:hover { opacity: 1; background: var(--expense-bg); }
+  .tx-delete:active { transform: scale(0.9); }
+
 </style>
 </head>
 <body>
@@ -736,9 +752,9 @@
     </div>
   </div>
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('dashboard', this)">📊 דשבורד</div>
+    <div class="tab active" onclick="switchTab('dashboard', this)">💸 הוצאות</div>
     <div class="tab" onclick="switchTab('stats', this)">📈 סטטיסטיקה</div>
-    <div class="tab" onclick="switchTab('fixed', this)">📌 קבועות</div>
+    <div class="tab" onclick="switchTab('fixed', this)">🏦 מהחשבון</div>
   </div>
 </div>
 
@@ -801,7 +817,7 @@
   <!-- FIXED EXPENSES VIEW -->
   <div class="view" id="view-fixed">
     <div class="tx-header">
-      <div class="tx-title">הוצאות קבועות</div>
+      <div class="tx-title">הוצאות מהחשבון</div>
       <div class="tx-count" id="fixed-count">0</div>
     </div>
     <div class="filter-row">
@@ -838,7 +854,7 @@
   <div class="panel-overlay" onclick="closeFixedPanel()"></div>
   <div class="panel-sheet">
     <div class="panel-handle"></div>
-    <div class="panel-title">הוספת הוצאה קבועה</div>
+    <div class="panel-title">הוספת הוצאה מהחשבון</div>
 
     <div class="type-row">
       <button class="type-btn active expense" id="fixed-btn-expense" onclick="setFixedType('expense')">📤 הוצאה</button>
@@ -853,10 +869,11 @@
       <div class="field">
         <label>קטגוריה</label>
         <select id="fixed-category">
-          <option value="⚡ חשמל">⚡ חשמל</option>
           <option value="💧 מים">💧 מים</option>
           <option value="🏛️ ארנונה">🏛️ ארנונה</option>
           <option value="🔥 גז">🔥 גז</option>
+          <option value="🏦 העברה בנקאית">🏦 העברה בנקאית</option>
+          <option value="🏢 וועד">🏢 וועד</option>
         </select>
       </div>
     </div>
@@ -911,7 +928,7 @@
       </div>
     </div>
 
-    <button class="btn-submit expense-btn" id="fixed-add-btn" onclick="addFixedTransaction()">+ הוסף הוצאה קבועה</button>
+    <button class="btn-submit expense-btn" id="fixed-add-btn" onclick="addFixedTransaction()">+ הוסף הוצאה מהחשבון</button>
     <div class="status-msg" id="fixed-add-status"></div>
   </div>
 </div>
@@ -936,22 +953,14 @@
       <div class="field">
         <label>קטגוריה</label>
         <select id="category">
-          <option value="🍔 אוכל">🍔 אוכל</option>
-          <option value="🚌 תחבורה">🚌 תחבורה</option>
           <option value="🛒 קניות">🛒 קניות</option>
-          <option value="🏠 דיור">🏠 דיור</option>
-          <option value="💊 בריאות">💊 בריאות</option>
           <option value="🎮 בידור">🎮 בידור</option>
-          <option value="📱 טלפון/אינטרנט">📱 טלפון/אינטרנט</option>
-          <option value="👕 ביגוד">👕 ביגוד</option>
-          <option value="📚 חינוך">📚 חינוך</option>
-          <option value="💼 משכורת">💼 משכורת</option>
-          <option value="💡 שירותים">💡 שירותים</option>
-          <option value="🎁 מתנות">🎁 מתנות</option>
-          <option value="✈️ נסיעות">✈️ נסיעות</option>
+          <option value="👕 ביגוד והנעלה">👕 ביגוד והנעלה</option>
           <option value="⛽ דלק">⛽ דלק</option>
           <option value="💊 פארם">💊 פארם</option>
           <option value="🅿️ חניה">🅿️ חניה</option>
+          <option value="🚌 תחבורה">🚌 תחבורה</option>
+          <option value="🍔 אוכל">🍔 אוכל</option>
           <option value="📦 אחר">📦 אחר</option>
         </select>
       </div>
@@ -1157,7 +1166,30 @@
           <span class="tx-amount ${tx.type}">${tx.type==='expense'?'−':'+'}₪${Number(tx.amount).toLocaleString('he-IL',{maximumFractionDigits:0})}</span>
           <span class="tx-date">${dateStr}</span>
         </div>
+        <button class="tx-delete" onclick="deleteTransaction('${tx.id}', this)" title="מחק">🗑️</button>
       </div>`;
+  }
+
+  async function deleteTransaction(id, btn) {
+    if (!confirm('למחוק עסקה זו?')) return;
+    btn.textContent = '⏳';
+    btn.disabled = true;
+    try {
+      const res = await fetch(API_URL + '?action=delete&id=' + id);
+      const data = await res.json();
+      if (data.success) {
+        allTransactions = allTransactions.filter(tx => tx.id !== id);
+        renderAll();
+      } else {
+        btn.textContent = '🗑️';
+        btn.disabled = false;
+        alert('שגיאה במחיקה');
+      }
+    } catch {
+      btn.textContent = '🗑️';
+      btn.disabled = false;
+      alert('שגיאה במחיקה');
+    }
   }
 
   function renderRecent(monthTx) {
@@ -1353,7 +1385,7 @@
     document.getElementById('fixed-btn-income').className = 'type-btn' + (type==='income' ? ' active income' : '');
     const btn = document.getElementById('fixed-add-btn');
     btn.className = 'btn-submit ' + (type==='expense' ? 'expense-btn' : 'income-btn');
-    btn.textContent = type==='expense' ? '+ הוסף הוצאה קבועה' : '+ הוסף הכנסה קבועה';
+    btn.textContent = type==='expense' ? '+ הוסף הוצאה מהחשבון' : '+ הוסף הכנסה מהחשבון';
   }
 
   function selectFixedCard(el) {
@@ -1380,7 +1412,7 @@
     const count = document.getElementById('fixed-count');
     count.textContent = filtered.length;
     if (!filtered.length) {
-      list.innerHTML = '<div class="empty-state"><div class="emoji">📌</div><p>אין הוצאות קבועות החודש</p></div>';
+      list.innerHTML = '<div class="empty-state"><div class="emoji">📌</div><p>אין הוצאות מהחשבון החודש</p></div>';
       return;
     }
     list.innerHTML = filtered.map(txHTML).join('');
