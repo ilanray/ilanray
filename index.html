@@ -1270,8 +1270,10 @@
 
     showStatus(status,'loading','⏳ שומר...');
     try {
+      const isZikui = category.includes('זיכוי');
+      const finalAmount = isZikui ? -Math.abs(amount) : amount;
       const isMultiple = installmentType === 'תשלומים' && installmentCount > 1;
-      const perAmount = isMultiple ? parseFloat((amount / installmentCount).toFixed(2)) : amount;
+      const perAmount = isMultiple ? parseFloat((finalAmount / installmentCount).toFixed(2)) : finalAmount;
       const total = isMultiple ? installmentCount : 1;
       for (let i = 0; i < total; i++) {
         const txDate = new Date(date);
