@@ -1440,7 +1440,7 @@
     try {
       const res = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({type:'expense', amount, category, date, description, creditCard:'', installmentType:'', transactionGroup:'fixed'}),
+        body: JSON.stringify({type:'expense', amount, category, date, description, creditCard:'בנק', installmentType:'', transactionGroup:'fixed'}),
       });
       const data = await res.json();
       if (data.success) {
