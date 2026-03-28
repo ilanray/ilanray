@@ -1429,7 +1429,7 @@
   async function addFixedTransaction() {
     const amount = parseFloat(document.getElementById('fixed-amount').value);
     const category = document.getElementById('fixed-category').value;
-    const date = document.getElementById('date').value;
+    const date = document.getElementById('fixed-date').value;
     const description = document.getElementById('fixed-description').value.trim();
     const status = document.getElementById('fixed-add-status');
 
@@ -1440,7 +1440,14 @@
     try {
       const res = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({type:'expense', amount, category, date, description, creditCard:'בנק', installmentType:'', transactionGroup:'fixed', chargeDate: date}),
+        body: JSON.stringify({type:'expense', amount, category, date, description, creditCard:'בנק', installmentType:'', transactionGroup:'fixed',
+            chargeDate: (() => {
+              const d = new Date(date);
+              const dd = String(d.getDate()).padStart(2,'0');
+              const mm = String(d.getMonth()+1).padStart(2,'0');
+              return dd+'/'+mm+'/'+d.getFullYear();
+            })()
+          }),
       });
       const data = await res.json();
       if (data.success) {
