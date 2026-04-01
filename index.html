@@ -1169,8 +1169,22 @@
     });
     const nextChargeTotal = nextChargeTx.reduce((s,t)=>s+Number(t.amount),0);
 
+    // All expenses with chargeDate in the next charge month
+    const nextMonth = nextCharge.getMonth() + 1;
+    const nextYear = nextCharge.getFullYear();
+    const nextMonthExpenses = allTransactions.filter(tx => {
+      const cd = String(tx.chargeDate || '');
+      if (!cd) return false;
+      // format dd/mm/yyyy
+      const parts = cd.split('/');
+      if (parts.length === 3) {
+        return parseInt(parts[1]) === nextMonth && parseInt(parts[2]) === nextYear && Number(tx.amount) > 0;
+      }
+      return false;
+    }).reduce((s,t) => s + Number(t.amount), 0);
+
     document.getElementById('income-amount').textContent = fmt(totalIncome);
-    document.getElementById('expense-amount').textContent = fmt(totalExpense);
+    document.getElementById('expense-amount').textContent = fmt(nextMonthExpenses);
     const balEl = document.getElementById('balance-amount');
     balEl.textContent = fmt(nextChargeTotal);
     document.querySelector('.balance-card .s-label').textContent = 'חיוב ' + nextChargeStr;
