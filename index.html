@@ -1133,18 +1133,47 @@
     });
   }
 
+  function getNextCharge15() {
+    const today = new Date();
+    const day = today.getDate();
+    // If today is before the 15th, next charge is 15th of this month
+    // If today is 15th or after, next charge is 15th of next month
+    if (day < 15) {
+      return new Date(today.getFullYear(), today.getMonth(), 15);
+    } else {
+      return new Date(today.getFullYear(), today.getMonth() + 1, 15);
+    }
+  }
+
+  function formatChargeDate(d) {
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    return dd+'/'+mm+'/'+d.getFullYear();
+  }
+
   function renderAll() {
     const monthTx = getMonthTx();
     const regularTx = monthTx.filter(t => t.transactionGroup !== 'fixed');
     const totalIncome = regularTx.filter(t=>t.type==='income').reduce((s,t)=>s+Number(t.amount),0);
     const totalExpense = regularTx.filter(t=>t.type==='expense').reduce((s,t)=>s+Number(t.amount),0);
-    const balance = totalIncome - totalExpense;
     const fmt = n => '₪' + Math.abs(n).toLocaleString('he-IL',{maximumFractionDigits:0});
+
+    // Calculate next charge balance - all transactions with chargeDate = next 15th
+    const nextCharge = getNextCharge15();
+    const nextChargeStr = formatChargeDate(nextCharge);
+    const nextChargeTx = allTransactions.filter(tx => {
+      const cd = tx.chargeDate;
+      if (!cd) return false;
+      // normalize format: handle both dd/mm/yyyy and yyyy-mm-dd
+      return String(cd) === nextChargeStr;
+    });
+    const nextChargeTotal = nextChargeTx.reduce((s,t)=>s+Number(t.amount),0);
 
     document.getElementById('income-amount').textContent = fmt(totalIncome);
     document.getElementById('expense-amount').textContent = fmt(totalExpense);
     const balEl = document.getElementById('balance-amount');
-    balEl.textContent = (balance<0?'−':'')+fmt(balance);
+    balEl.textContent = fmt(nextChargeTotal);
+    document.querySelector('.balance-card .s-label').textContent = 'חיוב ' + nextChargeStr;
 
     renderRecent(monthTx);
     renderStats(monthTx);
