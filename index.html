@@ -1159,6 +1159,8 @@
     const fmt = n => '₪' + Math.abs(n).toLocaleString('he-IL',{maximumFractionDigits:0});
 
     // Calculate next charge balance - all transactions with chargeDate = next 15th
+    console.log('allTransactions count:', allTransactions.length);
+    console.log('sample chargeDate:', allTransactions[0]?.chargeDate);
     const nextCharge = getNextCharge15();
     const nextChargeStr = formatChargeDate(nextCharge);
     const nextChargeTx = allTransactions.filter(tx => {
