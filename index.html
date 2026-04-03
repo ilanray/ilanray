@@ -1304,9 +1304,19 @@
     document.getElementById('stat-bank').textContent = fmt(bankTotal);
     document.getElementById('stat-income').textContent = fmt(incomeTotal);
 
-    // categories
+    // categories by chargeDate month
+    const nextCharge = getNextCharge15();
+    const chargeTx = allTransactions.filter(tx => {
+      const cd = String(tx.chargeDate || '');
+      const parts = cd.split('/');
+      if (parts.length !== 3) return false;
+      return parseInt(parts[1]) === nextCharge.getMonth()+1
+        && parseInt(parts[2]) === nextCharge.getFullYear()
+        && Number(tx.amount) > 0;
+    });
+
     const catMap = {};
-    expenses.forEach(tx => {
+    chargeTx.forEach(tx => {
       const cat = tx.category || '📦 אחר';
       catMap[cat] = (catMap[cat]||0) + Number(tx.amount);
     });
@@ -1315,7 +1325,7 @@
 
     const catList = document.getElementById('cat-list');
     if (!sorted.length) {
-      catList.innerHTML = '<div class="empty-state"><div class="emoji">📊</div><p>אין נתונים</p></div>';
+      catList.innerHTML = '<div class="empty-state"><div class="emoji">📊</div><p>אין נתונים לחודש החיוב הקרוב</p></div>';
       return;
     }
     catList.innerHTML = sorted.map(([cat, amt]) => {
