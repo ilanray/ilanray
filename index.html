@@ -112,7 +112,7 @@
   /* SUMMARY STRIP */
   .summary-strip {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin-bottom: 18px;
   }
@@ -764,16 +764,12 @@
   <!-- DASHBOARD VIEW -->
   <div class="view active" id="view-dashboard">
     <div class="summary-strip">
-      <div class="s-card balance-card">
-        <div class="s-label">יתרה</div>
-        <div class="s-amount" id="balance-amount">₪0</div>
-      </div>
-      <div class="s-card income-scard">
-        <div class="s-label">הכנסות</div>
+      <div class="s-card expense-scard">
+        <div class="s-label" id="card-label">הוצאות כרטיס</div>
         <div class="s-amount" id="income-amount">₪0</div>
       </div>
-      <div class="s-card expense-scard">
-        <div class="s-label">הוצאות</div>
+      <div class="s-card balance-card">
+        <div class="s-label">הוצאות בנק</div>
         <div class="s-amount" id="expense-amount">₪0</div>
       </div>
     </div>
@@ -1185,11 +1181,28 @@
       return false;
     }).reduce((s,t) => s + Number(t.amount), 0);
 
-    document.getElementById('income-amount').textContent = fmt(totalIncome);
-    document.getElementById('expense-amount').textContent = fmt(nextMonthExpenses);
-    const balEl = document.getElementById('balance-amount');
-    balEl.textContent = fmt(nextChargeTotal);
-    document.querySelector('.balance-card .s-label').textContent = 'חיוב ' + nextChargeStr;
+    // הוצאות כרטיס — chargeDate = חודש הקרוב (ללא בנק)
+    const cardExpenses = allTransactions.filter(tx => {
+      const cd = String(tx.chargeDate || '');
+      if (!cd) return false;
+      const parts = cd.split('/');
+      if (parts.length !== 3) return false;
+      return parseInt(parts[1]) === nextMonth && parseInt(parts[2]) === nextYear
+        && String(tx.creditCard || '').toLowerCase() !== 'בנק'
+        && Number(tx.amount) !== 0;
+    }).reduce((s,t) => s + Number(t.amount), 0);
+
+    // הוצאות בנק — לפי חודש נוכחי (תאריך עסקה)
+    const today = new Date();
+    const bankExpenses = allTransactions.filter(tx => {
+      if (String(tx.creditCard || '') !== 'בנק') return false;
+      const d = new Date(tx.date);
+      return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+    }).reduce((s,t) => s + Number(t.amount), 0);
+
+    document.getElementById('income-amount').textContent = fmt(cardExpenses);
+    document.getElementById('expense-amount').textContent = fmt(bankExpenses);
+    document.getElementById('card-label').textContent = 'הוצאות כרטיס ' + nextChargeStr;
 
     renderRecent(monthTx);
     renderStats(monthTx);
