@@ -787,21 +787,25 @@
   <!-- STATS VIEW -->
   <div class="view" id="view-stats">
     <div class="stats-grid">
-      <div class="stat-card purple">
-        <div class="stat-label">סה"כ עסקאות</div>
-        <div class="stat-value" id="stat-count">0</div>
+      <div class="stat-card" style="border:1px solid #1a56db22; background:linear-gradient(135deg,#f0f5ff,#fff)">
+        <div class="stat-label" style="color:#1a56db">ויזה מקס</div>
+        <div class="stat-value" style="color:#1a56db" id="stat-visa">₪0</div>
       </div>
-      <div class="stat-card green">
-        <div class="stat-label">ממוצע הכנסה</div>
-        <div class="stat-value" id="stat-avg-income">₪0</div>
+      <div class="stat-card" style="border:1px solid #f59e0b22; background:linear-gradient(135deg,#fffbeb,#fff)">
+        <div class="stat-label" style="color:#b45309">ישראכרט זהב</div>
+        <div class="stat-value" style="color:#b45309" id="stat-isr-gold">₪0</div>
       </div>
-      <div class="stat-card red">
-        <div class="stat-label">ממוצע הוצאה</div>
-        <div class="stat-value" id="stat-avg-expense">₪0</div>
+      <div class="stat-card" style="border:1px solid var(--border)">
+        <div class="stat-label">ישראכרט לבן</div>
+        <div class="stat-value" style="color:var(--text)" id="stat-isr-white">₪0</div>
       </div>
-      <div class="stat-card purple">
-        <div class="stat-label">הוצאה הגדולה</div>
-        <div class="stat-value" id="stat-max">₪0</div>
+      <div class="stat-card" style="border:1px solid var(--purple)22; background:linear-gradient(135deg,#f3f0ff,#fff)">
+        <div class="stat-label" style="color:var(--purple)">הוצאות בנק</div>
+        <div class="stat-value" style="color:var(--purple)" id="stat-bank">₪0</div>
+      </div>
+      <div class="stat-card green" style="grid-column:span 2">
+        <div class="stat-label">הכנסות</div>
+        <div class="stat-value" id="stat-income">₪0</div>
       </div>
     </div>
     <div class="tx-header" style="margin-top:4px">
@@ -1273,17 +1277,32 @@
 
 
   function renderStats(monthTx) {
-    const expenses = monthTx.filter(t=>t.type==='expense');
-    const incomes = monthTx.filter(t=>t.type==='income');
     const fmt = n => '₪' + Math.abs(n).toLocaleString('he-IL',{maximumFractionDigits:0});
+    const sumByCard = (card) => allTransactions.filter(tx => {
+      const cd = String(tx.chargeDate || '');
+      const parts = cd.split('/');
+      if (parts.length !== 3) return false;
+      const nextCharge = getNextCharge15();
+      return parseInt(parts[1]) === nextCharge.getMonth()+1
+        && parseInt(parts[2]) === nextCharge.getFullYear()
+        && String(tx.creditCard || '') === card
+        && Number(tx.amount) > 0;
+    }).reduce((s,t) => s+Number(t.amount), 0);
 
-    document.getElementById('stat-count').textContent = monthTx.length;
-    document.getElementById('stat-avg-income').textContent = incomes.length
-      ? fmt(incomes.reduce((s,t)=>s+Number(t.amount),0)/incomes.length) : '₪0';
-    document.getElementById('stat-avg-expense').textContent = expenses.length
-      ? fmt(expenses.reduce((s,t)=>s+Number(t.amount),0)/expenses.length) : '₪0';
-    const maxExp = expenses.length ? Math.max(...expenses.map(t=>Number(t.amount))) : 0;
-    document.getElementById('stat-max').textContent = fmt(maxExp);
+    const today = new Date();
+    const bankTotal = allTransactions.filter(tx => {
+      if (String(tx.creditCard || '') !== 'בנק') return false;
+      const d = new Date(tx.date);
+      return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+    }).reduce((s,t) => s+Number(t.amount), 0);
+
+    const incomeTotal = monthTx.filter(t=>t.type==='income').reduce((s,t)=>s+Number(t.amount),0);
+
+    document.getElementById('stat-visa').textContent = fmt(sumByCard('ויזה מקס'));
+    document.getElementById('stat-isr-gold').textContent = fmt(sumByCard('ישראכרט זהב'));
+    document.getElementById('stat-isr-white').textContent = fmt(sumByCard('ישראכרט לבן'));
+    document.getElementById('stat-bank').textContent = fmt(bankTotal);
+    document.getElementById('stat-income').textContent = fmt(incomeTotal);
 
     // categories
     const catMap = {};
